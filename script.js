@@ -6,13 +6,12 @@ import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, onSnapshot }
 // 1. Vá no Firebase Console > Project Settings > General
 // 2. Copie a config e cole abaixo:
 const firebaseConfig = {
-     apiKey: "AIzaSyB50zJNYvzE9ecqBEWprummFQczftTAQi4",
-  authDomain: "planejamento-eb861.firebaseapp.com",
-  projectId: "planejamento-eb861",
-  storageBucket: "planejamento-eb861.firebasestorage.app",
-  messagingSenderId: "845098431812",
-  appId: "1:845098431812:web:53c8dff83b5b5bfb33d311",
-  measurementId: "G-CJN1J3RFD6"
+     apiKey: "AIzaSyBS_1SV_RpZ9WhUQEqbgXGC5_D-seor4Ls",
+  authDomain: "planejamento-d3c78.firebaseapp.com",
+  projectId: "planejamento-d3c78",
+  storageBucket: "planejamento-d3c78.firebasestorage.app",
+  messagingSenderId: "840047083909",
+  appId: "1:840047083909:web:5456504fdd393d6dcb04ec"
 };
 
 // Inicializa Firebase
@@ -188,3 +187,4 @@ window.onclick = function(event) {
     }
 
 }
+
