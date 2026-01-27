@@ -1,8 +1,6 @@
-// Importações Oficiais do Firebase v9
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-// --- SUA CONFIGURAÇÃO EXATA ---
 const firebaseConfig = {
   apiKey: "AIzaSyBS_1SV_RpZ9WhUQEqbgXGC5_D-seor4Ls",
   authDomain: "planejamento-d3c78.firebaseapp.com",
@@ -12,25 +10,45 @@ const firebaseConfig = {
   appId: "1:840047083909:web:5456504fdd393d6dcb04ec"
 };
 
-// Inicializa Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --- CONFIGURAÇÕES DE DATAS E VALORES ---
-// Data da entrega das chaves (Exemplo: Dezembro 2026)
-const DATA_ENTREGA_CHAVES = new Date("2026-12-31T00:00:00").getTime(); 
+// Data Limite para as parcelas (Fixo conforme pedido)
+const DATA_LIMITE_PARCELAS = new Date("2028-03-01T00:00:00");
 
-// Data final das parcelas (Conforme seu pedido: 01/01/2028)
-const DATA_FIM_PARCELA = new Date("2028-01-01T00:00:00");
+// --- 1. CONFIGURAÇÃO DE DATA (Contagem Regressiva) ---
+// Carrega a data salva ou usa um padrão
+async function loadDateConfig() {
+    const docRef = doc(db, "settings", "general");
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists() && docSnap.data().deliveryDate) {
+        const savedDate = docSnap.data().deliveryDate;
+        document.getElementById("date-config").value = savedDate;
+        startCountdown(savedDate);
+    } else {
+        // Padrão se não tiver nada salvo
+        document.getElementById("date-config").value = "2026-12-31";
+        startCountdown("2026-12-31");
+    }
+}
 
-// Valor da sua parcela mensal (EDITE AQUI O VALOR REAL)
-const VALOR_PARCELA_MENSAL = 1500.00; 
+// Salva a nova data quando o usuário muda
+window.updateDateConfig = async (newDate) => {
+    await setDoc(doc(db, "settings", "general"), { deliveryDate: newDate });
+    startCountdown(newDate);
+    alert("Data atualizada!");
+}
 
-// --- 1. Contagem Regressiva ---
-function startCountdown() {
-    setInterval(() => {
+function startCountdown(dateString) {
+    // Limpa intervalo anterior se houver (para não bugar o timer)
+    if(window.timerInterval) clearInterval(window.timerInterval);
+
+    const target = new Date(dateString + "T00:00:00").getTime();
+
+    window.timerInterval = setInterval(() => {
         const now = new Date().getTime();
-        const distance = DATA_ENTREGA_CHAVES - now;
+        const distance = target - now;
 
         if (distance < 0) {
             document.getElementById("timer").innerHTML = "CHAVES NA MÃO!";
@@ -39,40 +57,70 @@ function startCountdown() {
 
         const days = Math.floor(distance / (1000 * 60 * 60 * 24));
         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        
         document.getElementById("timer").innerHTML = `${days} dias e ${hours} horas`;
     }, 1000);
 }
 
-// --- 2. Cálculos Financeiros ---
-function calculateInstallments() {
-    const now = new Date();
-    // Cálculo simples de meses até Jan/2028
-    let months = (DATA_FIM_PARCELA.getFullYear() - now.getFullYear()) * 12;
-    months -= now.getMonth();
-    months += DATA_FIM_PARCELA.getMonth();
-    
-    if (months <= 0) return 0;
-    return months * VALOR_PARCELA_MENSAL;
+// --- 2. PARCELAS MENSAIS (TABELA EDITÁVEL) ---
+function loadMonthlyInstallments() {
+    // Ouve a coleção de pagamentos em tempo real
+    onSnapshot(collection(db, "payments"), (snapshot) => {
+        const paymentsData = {};
+        snapshot.forEach(doc => {
+            paymentsData[doc.id] = doc.data().value;
+        });
+
+        const tbody = document.getElementById("installments-list");
+        tbody.innerHTML = "";
+        
+        let currentDate = new Date();
+        // Ajusta para o dia 1 do mês atual para evitar pular meses
+        currentDate.setDate(1); 
+        
+        let totalInstallments = 0;
+
+        // Loop de Hoje até 01/03/2028
+        while (currentDate <= DATA_LIMITE_PARCELAS) {
+            // Cria ID único tipo "2026-01"
+            const monthId = currentDate.toISOString().slice(0, 7); 
+            const displayMonth = currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+            
+            // Pega valor salvo ou 0
+            const value = paymentsData[monthId] || 0;
+            totalInstallments += value;
+
+            tbody.innerHTML += `
+                <tr>
+                    <td style="text-transform: capitalize;">${displayMonth}</td>
+                    <td>
+                        R$ <input type="number" 
+                               class="money-input" 
+                               value="${value}" 
+                               onchange="savePayment('${monthId}', this.value)">
+                    </td>
+                    <td>${value > 0 ? '<i class="fas fa-check-circle" style="color:green"></i>' : '-'}</td>
+                </tr>
+            `;
+
+            // Avança 1 mês
+            currentDate.setMonth(currentDate.getMonth() + 1);
+        }
+
+        window.installTotalGlobal = totalInstallments;
+        updateFinancialSummary();
+    });
 }
 
-function updateFinancialSummary() {
-    // Pega os totais salvos nas variáveis globais ou assume 0
-    const furnTotal = window.furnTotalGlobal || 0;
-    const renovTotal = window.renovTotalGlobal || 0;
-    const installTotal = calculateInstallments();
-    
-    const grandTotal = furnTotal + renovTotal + installTotal;
-
-    document.getElementById('total-furniture').innerText = formatCurrency(furnTotal);
-    document.getElementById('total-renovation').innerText = formatCurrency(renovTotal);
-    document.getElementById('total-installments').innerText = formatCurrency(installTotal);
-    document.getElementById('grand-total').innerText = formatCurrency(grandTotal);
+window.savePayment = async (monthId, value) => {
+    const numValue = parseFloat(value) || 0;
+    // Salva na coleção "payments" com ID sendo o mês (ex: "2026-05")
+    await setDoc(doc(db, "payments", monthId), { value: numValue });
+    // O onSnapshot vai atualizar a tela sozinho
 }
 
-// --- 3. Funções do Banco de Dados ---
+// --- 3. CRUD GENÉRICO (Adicionar e Remover) ---
 
-// Adicionar Item (Genérico)
+// Adicionar
 window.addItem = async (type) => {
     let collectionName, data;
 
@@ -80,57 +128,51 @@ window.addItem = async (type) => {
         const name = document.getElementById('furn-name').value;
         const price = parseFloat(document.getElementById('furn-price').value) || 0;
         const link = document.getElementById('furn-link').value;
-        const image = document.getElementById('furn-img').value; // Pega a foto
-
-        if(!name) return alert("Digite o nome do móvel!");
-
+        const image = document.getElementById('furn-img').value;
         collectionName = 'furniture';
-        data = { name, price, link, image, type: 'furniture', createdAt: new Date() };
+        data = { name, price, link, image };
     } 
     else if (type === 'renovation') {
         const name = document.getElementById('renov-name').value;
         const price = parseFloat(document.getElementById('renov-price').value) || 0;
         const category = document.getElementById('renov-type').value;
-
-        if(!name) return alert("Digite o nome do material!");
-
         collectionName = 'renovations';
-        data = { name, price, category, type: 'renovation', createdAt: new Date() };
+        data = { name, price, category };
+    }
+    else if (type === 'checklist') {
+        const name = document.getElementById('check-name').value;
+        collectionName = 'checklist';
+        data = { name, checked: false };
     }
 
-    try {
+    if(data.name) {
         await addDoc(collection(db, collectionName), data);
-        alert("Salvo com sucesso!");
         closeModal(`modal-${type}`);
-        // Limpa os campos
-        document.querySelectorAll(`#modal-${type} input`).forEach(input => input.value = '');
-    } catch (e) {
-        console.error("Erro ao gravar:", e);
-        alert("Erro ao salvar: " + e.message);
+        document.querySelectorAll(`#modal-${type} input`).forEach(i => i.value = '');
     }
 }
 
-// Carregar Móveis (Com Foto)
+// REMOVER ITEM (NOVO)
+window.deleteItem = async (collectionName, id) => {
+    if(confirm("Tem certeza que quer apagar este item?")) {
+        await deleteDoc(doc(db, collectionName, id));
+    }
+}
+
+// --- 4. CARREGAMENTO DAS LISTAS ---
+
 function loadFurniture() {
     const list = document.getElementById('list-furniture');
-    
-    // Escuta em tempo real
     onSnapshot(collection(db, "furniture"), (snapshot) => {
         list.innerHTML = '';
         let total = 0;
-
-        if (snapshot.empty) {
-            list.innerHTML = '<li style="padding:10px; text-align:center">Nenhum móvel cadastrado.</li>';
-        }
-
         snapshot.forEach((doc) => {
             const item = doc.data();
-            total += item.price;
+            total += item.price || 0;
             
-            // Lógica da Imagem ou Ícone
             const imgDisplay = item.image 
-                ? `<img src="${item.image}" class="furn-thumb" alt="${item.name}" onerror="this.onerror=null;this.src='';this.parentNode.innerHTML='<div class=\'furn-thumb-placeholder\'><i class=\'fas fa-couch\'></i></div>'">` 
-                : `<div class="furn-thumb-placeholder"><i class="fas fa-couch"></i></div>`;
+                ? `<img src="${item.image}" class="furn-thumb">` 
+                : `<div class="furn-thumb" style="background:#ddd; display:flex; align-items:center; justify-content:center"><i class="fas fa-couch"></i></div>`;
 
             list.innerHTML += `
                 <li class="item-card">
@@ -138,97 +180,87 @@ function loadFurniture() {
                         ${imgDisplay}
                         <div class="details">
                             <strong>${item.name}</strong><br>
-                            ${item.link ? `<a href="${item.link}" target="_blank">Ver na Loja <i class="fas fa-external-link-alt"></i></a>` : ''}
+                            ${item.link ? `<a href="${item.link}" target="_blank">Link</a>` : ''}
                         </div>
                     </div>
-                    <span class="price-tag">${formatCurrency(item.price)}</span>
+                    <div style="display:flex; align-items:center">
+                        <span style="font-weight:bold; margin-right:10px">${formatCurrency(item.price)}</span>
+                        <button class="btn-delete" onclick="deleteItem('furniture', '${doc.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </li>
             `;
         });
-        
         window.furnTotalGlobal = total;
         updateFinancialSummary();
-    }, (error) => {
-        console.error("Erro ao buscar móveis:", error);
     });
 }
 
-// Carregar Reformas
 function loadRenovations() {
     const list = document.getElementById('list-renovation');
-    
     onSnapshot(collection(db, "renovations"), (snapshot) => {
         list.innerHTML = '';
         let total = 0;
-
-        if (snapshot.empty) {
-            list.innerHTML = '<li style="padding:10px; text-align:center">Nenhum material cadastrado.</li>';
-        }
-
         snapshot.forEach((doc) => {
             const item = doc.data();
-            total += item.price;
+            total += item.price || 0;
             list.innerHTML += `
                 <li class="item-card">
                     <div class="item-info">
-                        <div class="furn-thumb-placeholder" style="background:#e3f2fd; color:#2196f3">
-                            <i class="fas fa-hammer"></i>
-                        </div>
-                        <div>
-                            <strong>${item.name}</strong> <small>(${item.category || 'Geral'})</small>
-                        </div>
+                        <strong>${item.name}</strong> <small>(${item.category})</small>
                     </div>
-                    <span class="price-tag">${formatCurrency(item.price)}</span>
+                    <div style="display:flex; align-items:center">
+                        <span style="font-weight:bold; margin-right:10px">${formatCurrency(item.price)}</span>
+                        <button class="btn-delete" onclick="deleteItem('renovations', '${doc.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </li>
             `;
         });
-        
         window.renovTotalGlobal = total;
         updateFinancialSummary();
     });
 }
 
-// Carregar Checklist Vistoria
 function loadChecklist() {
-    const items = [
-        "Quadro de luz (Disjuntores identificados?)",
-        "Tomadas (Teste de voltagem)",
-        "Piso (Oco? Riscado? Manchas?)",
-        "Janelas (Abrem fácil? Vidros ok?)",
-        "Torneiras e Sifões (Vazamentos?)",
-        "Caimento da água no box e sacada",
-        "Pintura e Gesso (Rachaduras?)"
-    ];
-    
-    const container = document.getElementById('list-inspection');
-    container.innerHTML = "";
-    items.forEach(item => {
-        container.innerHTML += `
-            <div class="check-item">
-                <input type="checkbox">
-                <label>${item}</label>
-            </div>
-        `;
+    const list = document.getElementById('list-checklist');
+    onSnapshot(collection(db, "checklist"), (snapshot) => {
+        list.innerHTML = '';
+        snapshot.forEach((doc) => {
+            const item = doc.data();
+            list.innerHTML += `
+                <div class="check-item">
+                    <label>${item.name}</label>
+                    <button class="btn-delete" onclick="deleteItem('checklist', '${doc.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+        });
     });
 }
 
-// Utilitários
+function updateFinancialSummary() {
+    const total = (window.furnTotalGlobal || 0) + (window.renovTotalGlobal || 0) + (window.installTotalGlobal || 0);
+    document.getElementById('total-furniture').innerText = formatCurrency(window.furnTotalGlobal || 0);
+    document.getElementById('total-renovation').innerText = formatCurrency(window.renovTotalGlobal || 0);
+    document.getElementById('total-installments').innerText = formatCurrency(window.installTotalGlobal || 0);
+    document.getElementById('grand-total').innerText = formatCurrency(total);
+}
+
 function formatCurrency(value) {
-    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    return (value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
 window.openModal = (id) => document.getElementById(id).style.display = 'flex';
 window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+window.onclick = (e) => { if (e.target.classList.contains('modal')) e.target.style.display = "none"; }
 
-window.onclick = function(event) {
-    if (event.target.classList.contains('modal')) {
-        event.target.style.display = "none";
-    }
-}
-
-// --- EXECUÇÃO IMEDIATA ---
-console.log("Iniciando App...");
-startCountdown();
+// INICIALIZAÇÃO
+loadDateConfig();
+loadMonthlyInstallments();
 loadFurniture();
 loadRenovations();
 loadChecklist();
