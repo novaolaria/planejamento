@@ -1,13 +1,14 @@
 :root {
     --primary: #2c3e50;
     --accent: #27ae60;
+    --danger: #e74c3c;
     --bg: #f0f2f5;
     --card-bg: #ffffff;
     --text: #333;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', sans-serif;
     background-color: var(--bg);
     color: var(--text);
     margin: 0;
@@ -19,14 +20,17 @@ header {
     margin-bottom: 30px;
 }
 
+.config-bar {
+    margin: 10px 0;
+    font-size: 0.9em;
+}
+
 #countdown-container {
     background: var(--primary);
     color: white;
-    padding: 15px 25px;
+    padding: 15px;
     border-radius: 8px;
     display: inline-block;
-    margin-top: 10px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .card, .content-section {
@@ -37,12 +41,11 @@ header {
     margin-bottom: 25px;
 }
 
-/* Dashboard Financeiro */
+/* Dashboard */
 .finance-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
-    margin-top: 15px;
 }
 
 .stat {
@@ -55,18 +58,22 @@ header {
     border: 1px solid #e9ecef;
 }
 
-.stat.total {
-    background: var(--accent);
-    color: white;
-    border: none;
+.stat.total { background: var(--accent); color: white; border: none; }
+.stat strong { font-size: 1.4em; margin-top: 5px; }
+
+/* Tabela de Parcelas */
+.table-container { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+th { background-color: #f8f9fa; }
+.money-input {
+    width: 100px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 
-.stat strong {
-    font-size: 1.5em;
-    margin-top: 8px;
-}
-
-/* Listas e Itens */
+/* Listas */
 .header-action {
     display: flex;
     justify-content: space-between;
@@ -80,121 +87,63 @@ button {
     background: var(--primary);
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: 8px 15px;
     border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
-    transition: 0.2s;
-}
-
-button:hover {
-    background: #34495e;
-}
-
-.item-list {
-    list-style: none;
-    padding: 0;
 }
 
 .item-card {
     border-bottom: 1px solid #eee;
-    padding: 15px 0;
+    padding: 10px 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-/* Estilo das Imagens e Layout do Item */
-.item-info {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
+.item-info { display: flex; align-items: center; gap: 15px; }
 
 .furn-thumb {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 8px;
-    border: 1px solid #ddd;
+    width: 50px; height: 50px;
+    object-fit: cover; border-radius: 6px;
 }
 
-.furn-thumb-placeholder {
-    width: 60px;
-    height: 60px;
-    background: #e0e0e0;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #888;
-    font-size: 1.5em;
-}
-
-.details a {
-    color: var(--primary);
-    text-decoration: none;
-    font-size: 0.9em;
-}
-
-.details a:hover {
-    text-decoration: underline;
-}
-
-.price-tag {
-    font-weight: bold;
-    color: var(--primary);
+/* Botão de Excluir */
+.btn-delete {
+    background: transparent;
+    color: #ccc;
     font-size: 1.1em;
+    margin-left: 10px;
+    padding: 5px;
 }
+.btn-delete:hover { color: var(--danger); background: transparent; }
 
-/* Vistoria */
+/* Checklist */
 .checklist-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 10px;
 }
-
 .check-item {
     background: #f9f9f9;
-    padding: 12px;
+    padding: 10px;
     border-radius: 6px;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 10px;
 }
 
 /* Modal */
 .modal {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
+    display: none; position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.5);
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+    justify-content: center; align-items: center;
 }
-
 .modal-content {
-    background: white;
-    padding: 25px;
-    border-radius: 10px;
-    width: 90%;
-    max-width: 400px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    background: white; padding: 25px;
+    border-radius: 10px; width: 300px;
+    display: flex; flex-direction: column; gap: 10px;
 }
-
-.modal-content input {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-.close {
-    align-self: flex-end;
-    cursor: pointer;
-    font-size: 1.5em;
-    margin-bottom: -10px;
-}
+.modal-content input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+.close { align-self: flex-end; cursor: pointer; font-size: 1.5em; }
