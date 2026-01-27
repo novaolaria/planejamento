@@ -24,12 +24,13 @@ const VALOR_PARCELA_MENSAL = 1500.00; // Ajuste o valor da sua parcela
 const DATA_FINAL_PAGAMENTO = new Date("2028-01-01T00:00:00");
 
 // --- FUNÇÕES DE INICIALIZAÇÃO ---
-document.addEventListener('DOMContentLoaded', () => {
-    startCountdown();
-    loadDashboard();
-    loadFurniture();
-    loadRenovations();
-    loadChecklist();
+// Inicia tudo imediatamente
+console.log("Iniciando carregamento do site..."); // Para teste
+startCountdown();
+loadDashboard();
+loadFurniture();
+loadRenovations();
+loadChecklist();
 });
 
 // 1. Contador Regressivo
@@ -102,25 +103,45 @@ window.addItem = async (type) => {
 // Carregar Móveis (Realtime)
 function loadFurniture() {
     const list = document.getElementById('list-furniture');
+    
+    // O console vai avisar se entrou aqui
+    console.log("Aguardando móveis do banco de dados...");
+
     onSnapshot(collection(db, "furniture"), (snapshot) => {
+        // O console vai avisar quantos itens achou
+        console.log("Recebi atualização! Total de itens:", snapshot.size);
+        
         list.innerHTML = '';
         let total = 0;
+        
+        if (snapshot.empty) {
+            list.innerHTML = '<p>Nenhum móvel cadastrado ainda.</p>';
+        }
+
         snapshot.forEach((doc) => {
             const item = doc.data();
+            console.log("Item encontrado:", item.name); // Mostra o nome do item no console
+            
             total += item.price;
+            
+            // ... (o resto do código de exibir o item continua igual) ...
+             const imgDisplay = item.image 
+                ? `<img src="${item.image}" class="furn-thumb" alt="${item.name}">` 
+                : `<div class="furn-thumb-placeholder"><i class="fas fa-couch"></i></div>`;
+
             list.innerHTML += `
-                <li class="item-card">
-                    <div>
-                        <strong>${item.name}</strong><br>
-                        <a href="${item.link}" target="_blank">Ver Link <i class="fas fa-external-link-alt"></i></a>
+                <li class="item-card furniture-card">
+                    <div class="item-info">
+                        ${imgDisplay}
+                        <div class="details">
+                            <strong>${item.name}</strong><br>
+                            <a href="${item.link}" target="_blank">Visitar Loja <i class="fas fa-external-link-alt"></i></a>
+                        </div>
                     </div>
-                    <span>${formatCurrency(item.price)}</span>
+                    <span class="price-tag">${formatCurrency(item.price)}</span>
                 </li>
             `;
         });
-        // Atualiza o total global passando o valor atual desta categoria
-        // Nota: Em um app real, faríamos um state management melhor, 
-        // mas aqui vamos recalcular lendo do DOM ou guardando em variável global
         window.furnTotalGlobal = total; 
         updateFinancialSummary(window.furnTotalGlobal || 0, window.renovTotalGlobal || 0);
     });
