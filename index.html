@@ -11,8 +11,14 @@
 
     <header>
         <h1><i class="fas fa-home"></i> Planejamento do Apê</h1>
+        
+        <div class="config-bar">
+            <label>Data Entrega das Chaves:</label>
+            <input type="date" id="date-config" onchange="updateDateConfig(this.value)">
+        </div>
+
         <div id="countdown-container">
-            <h3>Contagem Regressiva (Chaves)</h3>
+            <h3>Contagem Regressiva</h3>
             <div id="timer">Calculando...</div>
         </div>
     </header>
@@ -22,15 +28,15 @@
             <h2><i class="fas fa-chart-line"></i> Meta Financeira (Dia 1)</h2>
             <div class="finance-grid">
                 <div class="stat">
-                    <span>Móveis Planejados</span>
+                    <span>Móveis</span>
                     <strong id="total-furniture">R$ 0,00</strong>
                 </div>
                 <div class="stat">
-                    <span>Reformas/Materiais</span>
+                    <span>Obras</span>
                     <strong id="total-renovation">R$ 0,00</strong>
                 </div>
                 <div class="stat">
-                    <span>Parcelas (Até Jan/2028)</span>
+                    <span>Parcelas (Soma)</span>
                     <strong id="total-installments">R$ 0,00</strong>
                 </div>
                 <div class="stat total">
@@ -41,13 +47,29 @@
         </section>
 
         <section class="content-section">
+            <h2><i class="fas fa-calendar-alt"></i> Planejamento Mensal (Até Mar/2028)</h2>
+            <p class="subtitle">Edite os valores mês a mês. O sistema salva automaticamente.</p>
+            <div class="table-container">
+                <table id="installments-table">
+                    <thead>
+                        <tr>
+                            <th>Mês/Ano</th>
+                            <th>Valor (R$)</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="installments-list">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="content-section">
             <div class="header-action">
                 <h2><i class="fas fa-couch"></i> Lista de Móveis</h2>
                 <button onclick="openModal('modal-furniture')">+ Novo Móvel</button>
             </div>
-            <ul id="list-furniture" class="item-list">
-                <li>Carregando...</li>
-            </ul>
+            <ul id="list-furniture" class="item-list"></ul>
         </section>
 
         <section class="content-section">
@@ -55,14 +77,15 @@
                 <h2><i class="fas fa-tools"></i> Obras e Materiais</h2>
                 <button onclick="openModal('modal-renovation')">+ Novo Material</button>
             </div>
-            <ul id="list-renovation" class="item-list">
-                <li>Carregando...</li>
-            </ul>
+            <ul id="list-renovation" class="item-list"></ul>
         </section>
 
         <section class="content-section">
-            <h2><i class="fas fa-clipboard-check"></i> Checklist Vistoria</h2>
-            <div id="list-inspection" class="checklist-grid"></div>
+            <div class="header-action">
+                <h2><i class="fas fa-clipboard-check"></i> Checklist Vistoria</h2>
+                <button onclick="openModal('modal-checklist')">+ Novo Item</button>
+            </div>
+            <div id="list-checklist" class="checklist-grid"></div>
         </section>
     </main>
 
@@ -70,22 +93,31 @@
         <div class="modal-content">
             <span class="close" onclick="closeModal('modal-furniture')">&times;</span>
             <h3>Adicionar Móvel</h3>
-            <input type="text" id="furn-name" placeholder="Nome (ex: Sofá Retrátil)">
+            <input type="text" id="furn-name" placeholder="Nome (ex: Sofá)">
             <input type="number" id="furn-price" placeholder="Preço (R$)">
-            <input type="text" id="furn-link" placeholder="Link do Site (Loja)">
-            <input type="text" id="furn-img" placeholder="Link da FOTO (URL da imagem)">
-            <button onclick="addItem('furniture')">Salvar Móvel</button>
+            <input type="text" id="furn-link" placeholder="Link da Loja">
+            <input type="text" id="furn-img" placeholder="URL da Foto">
+            <button onclick="addItem('furniture')">Salvar</button>
         </div>
     </div>
 
     <div id="modal-renovation" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('modal-renovation')">&times;</span>
-            <h3>Material / Serviço</h3>
+            <h3>Material / Obra</h3>
             <input type="text" id="renov-name" placeholder="Item (ex: Fio 4mm)">
             <input type="number" id="renov-price" placeholder="Preço (R$)">
-            <input type="text" id="renov-type" placeholder="Categoria (ex: Elétrica)">
-            <button onclick="addItem('renovation')">Salvar Item</button>
+            <input type="text" id="renov-type" placeholder="Categoria">
+            <button onclick="addItem('renovation')">Salvar</button>
+        </div>
+    </div>
+
+    <div id="modal-checklist" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('modal-checklist')">&times;</span>
+            <h3>Item de Vistoria</h3>
+            <input type="text" id="check-name" placeholder="O que verificar?">
+            <button onclick="addItem('checklist')">Salvar</button>
         </div>
     </div>
 
