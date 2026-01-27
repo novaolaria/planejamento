@@ -1,4 +1,4 @@
-// Importando o Firebase (Versão Modular v9+)
+// Importando o Firebase (Versão Modular v9++)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
@@ -187,4 +187,5 @@ window.onclick = function(event) {
     }
 
 }
+
 
