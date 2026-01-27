@@ -3,30 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel do Apartamento </title>
+    <title>Painel do Apê - Caio</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
     <header>
-        <h1><i class="fas fa-home"></i> Meu Novo Apê</h1>
+        <h1><i class="fas fa-home"></i> Planejamento do Apê</h1>
         <div id="countdown-container">
-            <h3>Entrega das Chaves</h3>
+            <h3>Contagem Regressiva (Chaves)</h3>
             <div id="timer">Calculando...</div>
         </div>
     </header>
 
     <main>
         <section class="dashboard card">
-            <h2><i class="fas fa-chart-line"></i> Resumo Financeiro (Meta Dia 1)</h2>
+            <h2><i class="fas fa-chart-line"></i> Meta Financeira (Dia 1)</h2>
             <div class="finance-grid">
                 <div class="stat">
-                    <span>Custo Móveis</span>
+                    <span>Móveis Planejados</span>
                     <strong id="total-furniture">R$ 0,00</strong>
                 </div>
                 <div class="stat">
-                    <span>Custo Reformas</span>
+                    <span>Reformas/Materiais</span>
                     <strong id="total-renovation">R$ 0,00</strong>
                 </div>
                 <div class="stat">
@@ -34,7 +34,7 @@
                     <strong id="total-installments">R$ 0,00</strong>
                 </div>
                 <div class="stat total">
-                    <span>TOTAL NECESSÁRIO</span>
+                    <span>TOTAL GERAL</span>
                     <strong id="grand-total">R$ 0,00</strong>
                 </div>
             </div>
@@ -42,52 +42,53 @@
 
         <section class="content-section">
             <div class="header-action">
-                <h2><i class="fas fa-couch"></i> Planejamento de Móveis</h2>
-                <button onclick="openModal('modal-furniture')">+ Adicionar</button>
+                <h2><i class="fas fa-couch"></i> Lista de Móveis</h2>
+                <button onclick="openModal('modal-furniture')">+ Novo Móvel</button>
             </div>
-            <ul id="list-furniture" class="item-list"></ul>
+            <ul id="list-furniture" class="item-list">
+                <li>Carregando...</li>
+            </ul>
         </section>
 
         <section class="content-section">
             <div class="header-action">
-                <h2><i class="fas fa-tools"></i> Reformas & Materiais</h2>
-                <button onclick="openModal('modal-renovation')">+ Adicionar Item</button>
+                <h2><i class="fas fa-tools"></i> Obras e Materiais</h2>
+                <button onclick="openModal('modal-renovation')">+ Novo Material</button>
             </div>
-            <p class="subtitle">Foco: Elétrica, Pisos, Acabamentos</p>
-            <ul id="list-renovation" class="item-list"></ul>
+            <ul id="list-renovation" class="item-list">
+                <li>Carregando...</li>
+            </ul>
         </section>
 
         <section class="content-section">
-            <h2><i class="fas fa-clipboard-check"></i> Checklist de Vistoria</h2>
-            <div id="list-inspection" class="checklist-grid">
-                </div>
+            <h2><i class="fas fa-clipboard-check"></i> Checklist Vistoria</h2>
+            <div id="list-inspection" class="checklist-grid"></div>
         </section>
     </main>
 
     <div id="modal-furniture" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('modal-furniture')">&times;</span>
-            <h3>Novo Móvel</h3>
-            <input type="text" id="furn-name" placeholder="Nome (ex: Sofá)">
-            <input type="number" id="furn-price" placeholder="Preço Estimado">
-            <input type="text" id="furn-link" placeholder="Link da Loja">
-            <button onclick="addItem('furniture')">Salvar</button>
+            <h3>Adicionar Móvel</h3>
+            <input type="text" id="furn-name" placeholder="Nome (ex: Sofá Retrátil)">
+            <input type="number" id="furn-price" placeholder="Preço (R$)">
+            <input type="text" id="furn-link" placeholder="Link do Site (Loja)">
+            <input type="text" id="furn-img" placeholder="Link da FOTO (URL da imagem)">
+            <button onclick="addItem('furniture')">Salvar Móvel</button>
         </div>
     </div>
 
     <div id="modal-renovation" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('modal-renovation')">&times;</span>
-            <h3>Nova Reforma/Material</h3>
-            <input type="text" id="renov-name" placeholder="Item (ex: Fios 2.5mm)">
-            <input type="number" id="renov-price" placeholder="Custo">
+            <h3>Material / Serviço</h3>
+            <input type="text" id="renov-name" placeholder="Item (ex: Fio 4mm)">
+            <input type="number" id="renov-price" placeholder="Preço (R$)">
             <input type="text" id="renov-type" placeholder="Categoria (ex: Elétrica)">
-            <button onclick="addItem('renovation')">Salvar</button>
+            <button onclick="addItem('renovation')">Salvar Item</button>
         </div>
     </div>
 
     <script type="module" src="script.js"></script>
 </body>
-
 </html>
-
