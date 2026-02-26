@@ -2,14 +2,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase
 import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBS_1SV_RpZ9WhUQEqbgXGC5_D-seor4Ls",
+apiKey: "AIzaSyBS_1SV_RpZ9WhUQEqbgXGC5_D-seor4Ls",
   authDomain: "planejamento-d3c78.firebaseapp.com",
   projectId: "planejamento-d3c78",
   storageBucket: "planejamento-d3c78.firebasestorage.app",
   messagingSenderId: "840047083909",
   appId: "1:840047083909:web:5456504fdd393d6dcb04ec"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
@@ -264,3 +263,4 @@ loadMonthlyInstallments();
 loadFurniture();
 loadRenovations();
 loadChecklist();
+
